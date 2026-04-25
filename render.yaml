@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: clinsight-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://clinsight_database_user:OdoB8M8kvKY0v2JNz8udUZJy6DBPp6m7@dpg-d7lqilbbc2fs73cnip90-a.oregon-postgres.render.com/clinsight_database
+      - key: GEMINI_API_KEY
+        value: AIzaSyDAbvntnLGiXEIXn0Y-IvqH2Xv_Dyb70ow
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "30"
+      - key: PORT
+        value: "10000"
