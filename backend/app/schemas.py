@@ -118,3 +118,28 @@ class Token(BaseModel):
     token_type: str
     role: str
     name: str
+    email: str
+class AdminPatientSummary(BaseModel):
+    id: str
+    name: str
+    age: int
+    gender: str
+    admission_date: datetime
+
+    class Config:
+        from_attributes = True
+
+class AdminDoctorSummary(BaseModel):
+    id: str
+    name: str
+    username: str
+    role: str
+    patient_count: int
+    patients: List[AdminPatientSummary]
+
+    class Config:
+        from_attributes = True
+
+class AdminDashboardResponse(BaseModel):
+    total_doctors: int
+    doctors: List[AdminDoctorSummary]

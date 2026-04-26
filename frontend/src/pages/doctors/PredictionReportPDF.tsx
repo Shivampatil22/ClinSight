@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Svg, Circle, Path } from '@react-pdf/renderer';
 
 // Register a standard font if needed, otherwise use Helvetica by default
 // Font.register({ family: 'Roboto', src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-light-webfont.ttf' });
@@ -86,14 +86,16 @@ const styles = StyleSheet.create({
     riskIndicator: {
         width: 80,
         height: 80,
-        borderRadius: 40,
-        borderWidth: 8,
-        alignItems: 'center',
-        justifyContent: 'center',
         marginRight: 20,
+        position: 'relative',
     },
-    riskText: {
-        fontSize: 20,
+    gaugeText: {
+        position: 'absolute',
+        top: 30,
+        left: 0,
+        width: 80,
+        textAlign: 'center',
+        fontSize: 16,
         fontWeight: 'bold',
     },
     riskLabel: {
@@ -269,8 +271,30 @@ const PredictionReportPDF = ({ patient, doctorName, id, result, modelType, featu
                     <Text style={styles.sectionTitle}>Prediction Analysis</Text>
 
                     <View style={{ ...styles.riskSection, backgroundColor: riskBg }}>
-                        <View style={{ ...styles.riskIndicator, borderColor: riskColor }}>
-                            <Text style={{ ...styles.riskText, color: riskColor }}>{percentage.toFixed(1)}%</Text>
+                        <View style={styles.riskIndicator}>
+                            {(() => {
+                                // Arc gauge using Path — @react-pdf/renderer does not support strokeDashoffset on Circle
+                                const cx = 40, cy = 40, r = 34;
+                                const clampedP = Math.min(Math.max(probability, 0.001), 0.999);
+                                const angle = clampedP * 2 * Math.PI;
+                                const startX = cx;
+                                const startY = cy - r;
+                                const endX = cx + r * Math.sin(angle);
+                                const endY = cy - r * Math.cos(angle);
+                                const largeArc = clampedP > 0.5 ? 1 : 0;
+                                const arcPath = `M ${startX} ${startY} A ${r} ${r} 0 ${largeArc} 1 ${endX} ${endY}`;
+                                return (
+                                    <Svg width="80" height="80" viewBox="0 0 80 80">
+                                        {/* Gray track */}
+                                        <Circle cx="40" cy="40" r="34" stroke="#E5E7EB" strokeWidth="8" fill="none" />
+                                        {/* Colored arc */}
+                                        <Path d={arcPath} stroke={riskColor} strokeWidth="8" fill="none" strokeLinecap="round" />
+                                    </Svg>
+                                );
+                            })()}
+                            <Text style={{ ...styles.gaugeText, color: riskColor }}>
+                                {percentage.toFixed(1)}%
+                            </Text>
                         </View>
                         <View style={styles.riskDescription}>
                             <Text style={{ fontSize: 14, fontWeight: 'bold', color: riskColor, marginBottom: 4 }}>
